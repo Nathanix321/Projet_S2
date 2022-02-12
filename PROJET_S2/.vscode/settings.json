@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "accelerometre.h": "c",
+        "gestionserial.h": "c",
+        "gestionled.h": "c"
+    }
+}
