@@ -21,6 +21,14 @@
 #include "accelerometre.h"
 #include "memory.h"
 
+#define MODULE_WIRES 1
+#define MODULE_PADLUCK 2
+#define MODULE_MEMORY 3
+#define MODULE_KEYPAD 4
+#define MODULE_ACCELEROMETRE 5
+
+
+
 /**     Etat Transition          **/
 // variable
 bool commandeValid;
@@ -38,16 +46,21 @@ enum etatTransition
 
 // fonction
 bool etatTransitionModule(char rxData);
+bool sendData(int module, double *tabData, int tabSize);
 
 void setup()
 {
   // put your setup code here, to run once:
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   // etatTransition
   EtatTransition = START;
   commandeValid = false;
   id = 0;
+  double tab[3]= {1.26, 5, 4.69};
+  sendData(MODULE_WIRES, tab, 3);
+
+
 }
 
 void loop()
@@ -86,10 +99,12 @@ bool etatTransitionModule(char rxData)
   switch (EtatTransition)
   {
   case START:
-    if(rxData == '<'){
+    if (rxData == '<')
+    {
       EtatTransition = COMMANDE;
     }
-    else{
+    else
+    {
       EtatTransition = START;
       Serial.print("ERROR OF COMMUNICATION\n\r");
       commandeValid = false;
@@ -97,21 +112,29 @@ bool etatTransitionModule(char rxData)
     break;
 
   case COMMANDE:
-    if(('1' <= rxData) && (rxData <= '7')){
+    if (('1' <= rxData) && (rxData <= '7'))
+    {
       id = rxData - '0';
       Serial.print(rxData);
 
-      if((1 <= id) && (id <= 5)){
+      if ((1 <= id) && (id <= 5))
+      {
         EtatTransition = END;
       }
-      else if(id == 6){
+    }
+    else if (rxData == ',')
+    {
+      if (id == 6)
+      {
         EtatTransition = LED;
       }
-            else if(id == 7){
+      else if (id == 7)
+      {
         EtatTransition = BOMBE;
       }
     }
-    else{
+    else
+    {
       EtatTransition = END;
       Serial.print("COMMANDE NOT AVAILABLE\n\r");
       commandeValid = false;
@@ -119,7 +142,7 @@ bool etatTransitionModule(char rxData)
     break;
 
   case LED:
-    /* code */
+      //tester la valeur de rx
     break;
 
   case BOMBE:
@@ -127,15 +150,53 @@ bool etatTransitionModule(char rxData)
     break;
 
   case END:
-    if(rxData == '>'){
+    if (rxData == '>')
+    {
       commandeValid = true;
     }
-    else{
+    else
+    {
       Serial.print("ERROR OF COMMUNICATION\n\r");
       commandeValid = false;
     }
     EtatTransition = START;
     break;
   }
+  return 0;
+}
+
+bool sendData(int module, double *tabData,int tabSize){
+
+  char txData[30];
+  int index = 0;
+
+  txData[index++] = '<';
+  txData[index++] = module + '0';
+  txData[index++] = ',';
+
+  for(int i = 0; i < tabSize; i++){
+
+    char singleData[4];
+    int int_Value = tabData[i];
+
+    if(tabData[i] - int_Value == 0) //on vien tester si les decimaux sont 0, pour sauver de lespace dane le tableau
+      sprintf(singleData,"%d",tabData[i]);
+    else
+      sprintf(singleData,"%.2f",tabData[i]);
+
+    Serial.println(singleData);
+
+    for(int j = 0;singleData[j] != '\0'; j++){
+      txData[index++] = singleData[j];
+    }
+    txData[index++] = ',';
+  }
+
+  txData[index++] = '>';
+  //txData[index] = NULL;
+
+  //Serial.println(txData);
+
+
   return 0;
 }
