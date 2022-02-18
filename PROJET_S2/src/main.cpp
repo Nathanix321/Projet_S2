@@ -47,6 +47,7 @@ enum etatTransition
 #define ACCELEROMETRE_Y_PIN A4
 #define ACCELEROMETRE_Z_PIN A5
 
+volatile bool flagAccelerometre;
 volatile uint8_t comptTimer;
 Accelerometre accelerometre(ACCELEROMETRE_X_PIN, ACCELEROMETRE_Y_PIN, ACCELEROMETRE_Z_PIN);
 
@@ -78,6 +79,10 @@ void setup()
   commandeValid = false;
   id = 0;
 
+  //accelerometre
+  flagAccelerometre = false;
+  comptTimer = 0;
+
   // loop
   EtatModule = INIT;
 }
@@ -101,6 +106,17 @@ void loop()
   case KEYPAD:
     /* code */
     break;
+  }
+
+  if(flagAccelerometre){
+    flagAccelerometre = false;
+
+    int tabValue[3];//valeur pouvant aller de 0 a 1023
+    tabValue[0] = accelerometre.getX_value();
+    tabValue[1] = accelerometre.getY_value();
+    tabValue[2] = accelerometre.getZ_value();
+
+    sendData(MODULE_ACCELEROMETRE,tabValue,3); 
   }
 }
 
@@ -272,18 +288,9 @@ void accelerometreTimerInit()
 ISR(TIMER0_COMPA_vect)
 {
   comptTimer++;
-  if (comptTimer >= 100)
+  if (comptTimer >= 1000)
   {
-    cli();
-    comptTimer -= 100;
-
-    int tabValue[3];
-    tabValue[0] = accelerometre.getX_value();
-    tabValue[1] = accelerometre.getY_value();
-    tabValue[2] = accelerometre.getZ_value();
-
-    sendData(MODULE_ACCELEROMETRE,tabValue,3); 
-
-    sei();
+    comptTimer -= 1000;
+    flagAccelerometre = true;
   }
 }
