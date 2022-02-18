@@ -18,16 +18,14 @@
  */
 
 #include <Arduino.h>
-#include "accelerometre.h"
-#include "memory.h"
+
+#include <accelerometre.hpp>
 
 #define MODULE_WIRES 1
-#define MODULE_PADLUCK 2
+#define MODULE_PADLOCK 2
 #define MODULE_MEMORY 3
 #define MODULE_KEYPAD 4
 #define MODULE_ACCELEROMETRE 5
-
-
 
 /**     Etat Transition          **/
 // variable
@@ -44,48 +42,89 @@ enum etatTransition
 
 } EtatTransition;
 
+/**     accelerometre         **/
+#define ACCELEROMETRE_X_PIN A3
+#define ACCELEROMETRE_Y_PIN A4
+#define ACCELEROMETRE_Z_PIN A5
+
+volatile uint8_t comptTimer;
+Accelerometre accelerometre(ACCELEROMETRE_X_PIN, ACCELEROMETRE_Y_PIN, ACCELEROMETRE_Z_PIN);
+
+/**     loop         **/
+enum etatModule
+{
+  INIT,
+  WIRE,
+  PADLOCK,
+  MEMORY,
+  KEYPAD
+
+} EtatModule;
+
 // fonction
 bool etatTransitionModule(char rxData);
-bool sendData(int module, double *tabData, int tabSize);
+bool sendData(int module, int *tabData, int tabSize);
+void accelerometreTimerInit();
 
 void setup()
 {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  accelerometreTimerInit();
 
+  
   // etatTransition
   EtatTransition = START;
   commandeValid = false;
   id = 0;
-  double tab[3]= {1.26, 5, 4.69};
-  sendData(MODULE_WIRES, tab, 3);
 
-
+  // loop
+  EtatModule = INIT;
 }
 
 void loop()
 {
-  // put your main code here, to run repeatedly:
+  switch (EtatModule)
+  {
+  case INIT:
+    /* code */
+    break;
+  case WIRE:
+    /* code */
+    break;
+  case PADLOCK:
+    /* code */
+    break;
+  case MEMORY:
+    /* code */
+    break;
+  case KEYPAD:
+    /* code */
+    break;
+  }
 }
 
 /**
  * Possibiliter de reception
  *  -<1> //wire
- *  -<2> //Padluck
+ *  -<2> //Padlock
  *  -<3> //Memory
  *  -<4> //Keypad
- *  -<5> //accelerometre
  *  -<6,/a determiner/> //LED
  *  -<7,ON/OFF> //moteur vibrant
  *
  * Possibiliter de d'envoie
- *  -<1,wire_analog_value> //wire
- *  -<2,padluck_analog_Xvalue,padluck_analog_Yvalue> //Padluck
+ *  -<1,cut_wire> //wire
+ *  -<2,padluck_Xvalue,padloc_Yvalue> //Padlock
  *  -<3,memory_analog_value> //Memory
  *  -<4,keypad_digital_value> //Keypad
  *  -<5,accelerometre_analog_Xvalue,accelerometre_analog_Yvalue,accelerometre_analog_Zvalue> //accelerometre
  */
 
+/**
+ * @brief lorsqu'une commande est recus, serialEvent est automatiquement appelee
+ *
+ */
 void serialEvent()
 {
   while (Serial.available())
@@ -94,6 +133,13 @@ void serialEvent()
   }
 }
 
+/**
+ * @brief fonction qui traite la donnee recus
+ *
+ * @param rxData
+ * @return true
+ * @return false
+ */
 bool etatTransitionModule(char rxData)
 {
   switch (EtatTransition)
@@ -142,7 +188,7 @@ bool etatTransitionModule(char rxData)
     break;
 
   case LED:
-      //tester la valeur de rx
+    // tester la valeur de rx
     break;
 
   case BOMBE:
@@ -165,38 +211,79 @@ bool etatTransitionModule(char rxData)
   return 0;
 }
 
-bool sendData(int module, double *tabData,int tabSize){
+/**
+ * @brief fonction qui envoie une commande par le port serie
+ *
+ * @param module
+ * @param tabData
+ * @param tabSize
+ * @return true
+ * @return false
+ */
+bool sendData(int module, int *tabData, int tabSize)
+{
 
   char txData[30];
   int index = 0;
 
   txData[index++] = '<';
   txData[index++] = module + '0';
-  txData[index++] = ',';
 
-  for(int i = 0; i < tabSize; i++){
-
-    char singleData[4];
-    int int_Value = tabData[i];
-
-    if(tabData[i] - int_Value == 0) //on vien tester si les decimaux sont 0, pour sauver de lespace dane le tableau
-      sprintf(singleData,"%d",tabData[i]);
-    else
-      sprintf(singleData,"%.2f",tabData[i]);
-
-    Serial.println(singleData);
-
-    for(int j = 0;singleData[j] != '\0'; j++){
-      txData[index++] = singleData[j];
-    }
+  for (int i = 0; i < tabSize; i++)
+  {
     txData[index++] = ',';
+    char tempTab[10];
+    int sizeTempTab = sprintf(tempTab, "%d", tabData[i]);
+
+    for (int j = 0; j < sizeTempTab; j++)
+    {
+      txData[index++] = tempTab[j];
+    }
   }
 
   txData[index++] = '>';
-  //txData[index] = NULL;
+  txData[index] = '\0';
 
-  //Serial.println(txData);
-
+  Serial.println(txData);
 
   return 0;
+}
+
+/**
+ * @brief initialisation du timer0 pour l'accelerometre
+ *
+ */
+void accelerometreTimerInit()
+{
+  comptTimer = 0;
+  TCCR0A |= (1 << WGM01);
+  TCCR0B |= (1 << CS01) + (1 << CS00); // F_CPU/64 Hz -> 4us
+  OCR0A = 250;                         // compare match a tous les 1ms
+  TIMSK0 = (1 << OCIE0A);              // active interupt A
+  sei();
+}
+
+/**
+ *	@brief Fonction d'interuption du TIMER 0 qui compte jusq'a 100ms
+ *	@param compare le vecteur OCR0A
+ *	@param n/a
+ *	@return n/a
+ */
+ISR(TIMER0_COMPA_vect)
+{
+  comptTimer++;
+  if (comptTimer >= 100)
+  {
+    cli();
+    comptTimer -= 100;
+
+    int tabValue[3];
+    tabValue[0] = accelerometre.getX_value();
+    tabValue[1] = accelerometre.getY_value();
+    tabValue[2] = accelerometre.getZ_value();
+
+    sendData(MODULE_ACCELEROMETRE,tabValue,3); 
+
+    sei();
+  }
 }
