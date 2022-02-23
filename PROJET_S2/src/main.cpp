@@ -18,7 +18,6 @@
  */
 
 #include <Arduino.h>
-
 #include <accelerometre.hpp>
 
 #define MODULE_WIRES 1
@@ -47,8 +46,6 @@ enum etatTransition
 #define ACCELEROMETRE_Y_PIN A4
 #define ACCELEROMETRE_Z_PIN A5
 
-volatile bool flagAccelerometre;
-volatile uint8_t comptTimer;
 Accelerometre accelerometre(ACCELEROMETRE_X_PIN, ACCELEROMETRE_Y_PIN, ACCELEROMETRE_Z_PIN);
 
 /**     loop         **/
@@ -65,23 +62,18 @@ enum etatModule
 // fonction
 bool etatTransitionModule(char rxData);
 bool sendData(int module, int *tabData, int tabSize);
-void accelerometreTimerInit();
 
 void setup()
 {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  accelerometreTimerInit();
-
+  sei();
   
   // etatTransition
   EtatTransition = START;
   commandeValid = false;
   id = 0;
 
-  //accelerometre
-  flagAccelerometre = false;
-  comptTimer = 0;
 
   // loop
   EtatModule = INIT;
@@ -108,8 +100,8 @@ void loop()
     break;
   }
 
-  if(flagAccelerometre){
-    flagAccelerometre = false;
+  if(accelerometre.getStateFlag()){
+    accelerometre.setStateFlag(false);
 
     int tabValue[3];//valeur pouvant aller de 0 a 1023
     tabValue[0] = accelerometre.getX_value();
@@ -263,34 +255,4 @@ bool sendData(int module, int *tabData, int tabSize)
   Serial.println(txData);
 
   return 0;
-}
-
-/**
- * @brief initialisation du timer0 pour l'accelerometre
- *
- */
-void accelerometreTimerInit()
-{
-  comptTimer = 0;
-  TCCR0A |= (1 << WGM01);
-  TCCR0B |= (1 << CS01) + (1 << CS00); // F_CPU/64 Hz -> 4us
-  OCR0A = 250;                         // compare match a tous les 1ms
-  TIMSK0 = (1 << OCIE0A);              // active interupt A
-  sei();
-}
-
-/**
- *	@brief Fonction d'interuption du TIMER 0 qui compte jusq'a 100ms
- *	@param compare le vecteur OCR0A
- *	@param n/a
- *	@return n/a
- */
-ISR(TIMER0_COMPA_vect)
-{
-  comptTimer++;
-  if (comptTimer >= 1000)
-  {
-    comptTimer -= 1000;
-    flagAccelerometre = true;
-  }
 }
