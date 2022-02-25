@@ -12,13 +12,26 @@
 #define MEMORY_H_
 
 #include <Arduino.h>
+#include "ShiftRegister74HC595.h"
 
-/**
- * @brief initialise les pins pour le module MEMORY
- * 
- */
-void memoryInit();
+class Memory
+{ // The class
+private:
 
+ShiftRegister74HC595<1> * gestionLED;
+
+void pciSetup(uint8_t pin);
+
+public: // Access specifier
+  Memory(ShiftRegister74HC595<1> *_gestionLED, uint8_t switchReadPin, uint8_t sendReadPin);
+  ~Memory();
+
+  void setLevel(uint8_t level);
+  void setNumber(uint8_t number);
+  bool getSendBTNState();
+  uint16_t getSwitchState();
+
+};
 
 
 
