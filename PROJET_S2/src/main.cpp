@@ -40,12 +40,12 @@ uint8_t LEDState;
 // constante
 enum etatTransition
 {
-  START,
-  COMMANDE,
-  MEMORY_LED,
-  LED,
-  BOMBE,
-  END
+  START_DATA,
+  COMMANDE_DATA,
+  MEMORY_LED_DATA,
+  LED_DATA,
+  BOMBE_DATA,
+  END_DATA
 } EtatTransition;
 
 /**     memory         **/
@@ -55,8 +55,10 @@ enum etatTransition
 #define MEMORY_ANALOG_PIN A4
 #define MEMORY_DIGITAL_PIN 22
 
+int indexData;
 uint8_t memoryLevel;
 uint8_t memoryNumber;
+bool relacheBouton;
 
 ShiftRegister74HC595<2> gestionLED(MEMORY_RCLK_PIN, MEMORY_SRCLK_PIN, MEMORY_SER_PIN);
 Memory memory(gestionLED, MEMORY_ANALOG_PIN, MEMORY_DIGITAL_PIN);
@@ -89,7 +91,7 @@ void setup()
   sei();
 
   // etatTransition
-  EtatTransition = START;
+  EtatTransition = START_DATA;
   commandeValid = false;
   idModule = 0;
   LEDStateFlag = false;
@@ -99,16 +101,21 @@ void setup()
   BombeStateFlag = false;
 
   // memory
+  indexData = 0;
   memoryLevel = 0;
   memoryNumber = 10; // 10 = aucun chiffre afficher
+  relacheBouton = false;
   memory.MemoryInit();
+  
 
   // loop
-  EtatModule = INIT;
+  EtatModule = MEMORY;
 }
 
 void loop()
 {
+  // Serial.println(EtatModule);
+
   switch (EtatModule)
   {
   case INIT:
@@ -125,18 +132,19 @@ void loop()
     }
     break;
   case MEMORY:
-    if (commandeValid)
+    memory.setNumber(memoryNumber);
+    memory.setLevel(memoryLevel);
+
+    if (memory.getSendBTNState() && !relacheBouton)
     {
-      memory.setNumber(memoryNumber);
-      memory.setLevel(memoryLevel);
-
-      Serial.println("fonctionne");
-
-      if (memory.getSendBTNState())
-      {
-        Serial.println(memory.getSwitchState());
-      }
+      relacheBouton = true;
     }
+    else if(!memory.getSendBTNState() && relacheBouton){
+      relacheBouton = false;
+      Serial.println(memory.getSwitchState());
+      //sendData(MODULE_MEMORY, memory.getSwitchState(), 1);
+    }
+
     break;
   case KEYPAD:
     if (commandeValid)
@@ -161,10 +169,11 @@ void loop()
   {
     BombeStateFlag = false;
 
-    delay(5000);
+    delay(2000);
 
     EtatModule = INIT;
   }
+
 }
 
 /**
@@ -172,7 +181,7 @@ void loop()
  *  -<0,> //initialiser le board
  *  -<1,> //wire
  *  -<2,> //Padlock
- *  -<3,number,level,> //Memory
+ *  -<3,number,level,> //Memory   'I' pour rien afficher sur le 7 segments
  *  -<4,> //Keypad
  *  -<6,etat_LED_module,> //LED 0b1000 = module 4/0b0100 = module 3/0b0010 = module 2/0b0001 = module 1
  *  -<7,etat_moteur,> //moteur vibrant 0 = OFF/1 = ON
@@ -206,107 +215,107 @@ void serialEvent()
  */
 bool etatTransitionModule(char rxData)
 {
-  Serial.println("______________");
-  Serial.println(EtatTransition);
 
   switch (EtatTransition)
   {
-  case START:
-    Serial.println(rxData);
+  case START_DATA:
     if (rxData == '<')
     {
-      EtatTransition = COMMANDE;
+      EtatTransition = COMMANDE_DATA;
+      indexData = 0;
     }
     else
     {
-      EtatTransition = START;
+      EtatTransition = START_DATA;
       Serial.print("ERROR OF COMMUNICATION\n\r");
       commandeValid = false;
     }
+    return 0;
     break;
 
-  case COMMANDE:
-    Serial.println(rxData);
+  case COMMANDE_DATA:
 
     if (('0' <= rxData) && (rxData <= '7'))
     {
       idModule = rxData - '0';
+      // Serial.println(idModule);
     }
     else if (rxData == ',')
     {
       if (idModule == 3)
-        EtatTransition = MEMORY_LED;
+        EtatTransition = MEMORY_LED_DATA;
       else if (idModule == 6)
-        EtatTransition = LED;
+        EtatTransition = LED_DATA;
       else if (idModule == 7)
-        EtatTransition = BOMBE;
-      else if((idModule != 7) && (idModule != 6) && (idModule != 3))
-        EtatTransition = END;
+        EtatTransition = BOMBE_DATA;
+      else if ((idModule != 7) && (idModule != 6) && (idModule != 3))
+        EtatTransition = END_DATA;
     }
     else
     {
-      EtatTransition = START;
+      EtatTransition = START_DATA;
       Serial.print("COMMANDE NOT AVAILABLE\n\r");
       commandeValid = false;
     }
-
+    return 0;
     break;
 
-  case MEMORY_LED:
-    Serial.println(rxData);
-    int indexData = 0;
+  case MEMORY_LED_DATA:
 
-    if ((indexData++ == 0) && ((rxData >= '0') && (rxData <= '9')))
+    if ((indexData == 0) && ((rxData >= '0') && (rxData <= '9')))
       memoryNumber = rxData - '0';
-    else if ((indexData++ == 1) && ((rxData >= '1') && (rxData <= '4')))
+    if ((indexData == 0) && (rxData == 'I'))
+      memoryNumber = 10;
+    else if ((indexData == 2) && ((rxData >= '1') && (rxData <= '5')))
       memoryLevel = rxData - '0';
-    else if ((indexData++ == 2) && (rxData == ','))
-    {
-      EtatTransition = END;
-    }
-    else
-      EtatTransition = START;
+    else if ((indexData == 3) && (rxData == ','))
+      EtatTransition = END_DATA;
+    else if ((indexData == 1) && (rxData != ','))
+      EtatTransition = START_DATA;
 
+    indexData++;
+
+    return 0;
     break;
 
-  case LED:
-    Serial.println(rxData);
+  case LED_DATA:
     char tabLEDData[2];
-    uint8_t index = 0;
 
     if ((rxData >= '0') && (rxData <= '9'))
-      tabLEDData[index++] = rxData;
+      tabLEDData[indexData++] = rxData;
     else if (rxData == ',')
     {
       LEDState = atoi(tabLEDData);
       LEDStateFlag = true;
-      EtatTransition = END;
+      EtatTransition = END_DATA;
     }
     else
-      EtatTransition = START;
+      EtatTransition = START_DATA;
+
+    return 0;
     break;
 
-  case BOMBE:
-    Serial.println(rxData);
+  case BOMBE_DATA:
+
     if ((rxData == '0') || (rxData == '1'))
     {
       BombeState = rxData - '0';
       BombeStateFlag = true;
     }
     else if (rxData == ',')
-      EtatTransition = END;
+      EtatTransition = END_DATA;
     else
     {
       BombeStateFlag = false;
-      EtatTransition = START;
+      EtatTransition = START_DATA;
       Serial.println("ERROR OF COMMUNICATION\n\r");
       commandeValid = false;
     }
 
+    return 0;
     break;
 
-  case END:
-    Serial.println(rxData);
+  case END_DATA:
 
     if (rxData == '>')
     {
@@ -318,9 +327,23 @@ bool etatTransitionModule(char rxData)
       commandeValid = false;
     }
 
-    Serial.println(commandeValid);
-    Serial.println(idModule);
-    EtatTransition = START;
+    if (commandeValid)
+    {
+      if (idModule == 0)
+        EtatModule = INIT;
+      else if (idModule == 1)
+        EtatModule = WIRE;
+      else if (idModule == 2)
+        EtatModule = PADLOCK;
+      else if (idModule == 3)
+        EtatModule = MEMORY;
+      else if (idModule == 4)
+        EtatModule = KEYPAD;
+    }
+
+    EtatTransition = START_DATA;
+
+    return 0;
     break;
   }
 
