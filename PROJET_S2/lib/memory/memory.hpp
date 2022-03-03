@@ -14,6 +14,8 @@
 #include <Arduino.h>
 #include <ShiftRegister74HC595.h>
 
+#define DELAY_INIT_MS 75
+
 #define SEGMENT_ID 0
 #define BARGRAPH_ID 1
 
@@ -37,9 +39,6 @@
 #define NIVEAU_3         0b00000111
 #define NIVEAU_4         0b00001111
 #define NIVEAU_5         0b00011111
-
-void pciSetup(uint8_t pin);
-
 
 class Memory 
 {
