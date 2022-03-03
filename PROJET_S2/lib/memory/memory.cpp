@@ -31,6 +31,7 @@ Memory::Memory(ShiftRegister74HC595<2> &_gestionLED, uint8_t analogReadPin, uint
     send_pin = sendReadPin;
     switch_pin = analogReadPin;
     stateSWFlag = false;
+
 }
 
 /**
@@ -48,55 +49,55 @@ Memory::~Memory()
 void Memory::MemoryInit()
 {
     setNumber(0);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setNumber(1);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setNumber(2);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setNumber(3);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setNumber(4);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setNumber(5);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setNumber(6);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setNumber(7);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setNumber(8);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setNumber(9);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setNumber(10);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setLevel(1);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setLevel(2);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setLevel(3);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setLevel(4);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setLevel(5);
-    delay(250);
+    delay(DELAY_INIT_MS);
 
     setLevel(1);
-    delay(250);
+    delay(DELAY_INIT_MS);
 }
 
 /**
@@ -165,7 +166,7 @@ void Memory::setLevel(uint8_t level)
  */
 bool Memory::getSendBTNState()
 {
-    return stateSWFlag;
+    return digitalRead(send_pin);
 }
 
 /**
@@ -186,30 +187,4 @@ void Memory::setSendBTNState(bool state)
 uint16_t Memory::getSwitchState()
 {
     return analogRead(switch_pin);
-}
-
-/**
- * @brief
- *
- * @param pin
- */
-void pciSetup(uint8_t pin)
-{
-    *digitalPinToPCMSK(pin) |= bit(digitalPinToPCMSKbit(pin)); // enable pin
-    PCIFR |= bit(digitalPinToPCICRbit(pin));                   // clear any outstanding interrupt
-    PCICR |= bit(digitalPinToPCICRbit(pin));                   // enable interrupt for the group
-}
-
-/**
- * @brief Construct a new ISR object
- *
- */
-ISR(PCINT2_vect)
-{
-    if (digitalRead(send_pin))
-    {
-        stateSWFlag = true;
-    }
-    else
-        stateSWFlag = false;
 }
