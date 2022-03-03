@@ -43,7 +43,6 @@ Accelerometre::Accelerometre(uint8_t A_xPin, uint8_t A_yPin, uint8_t A_zPin)
   comptTimer = 0;
 
   _accelerometreTimerInit();
-  Serial.println("Init accelerometre");
 }
 /**
  * @brief Destroy the Accelerometre:: Accelerometre object
