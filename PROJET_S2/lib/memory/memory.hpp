@@ -40,6 +40,26 @@
 #define NIVEAU_4         0b00001111
 #define NIVEAU_5         0b00011111
 
+
+//Valeur ADC de sortie du sommateur
+#define SWITCH_0000 0
+#define SWITCH_0001 56
+#define SWITCH_0010 109
+#define SWITCH_0011 151
+#define SWITCH_0100 191
+#define SWITCH_0101 229
+#define SWITCH_0110 271
+#define SWITCH_0111 311
+#define SWITCH_1000 354
+#define SWITCH_1001 400
+#define SWITCH_1010 458
+#define SWITCH_1011 518
+#define SWITCH_1100 590
+#define SWITCH_1101 676
+#define SWITCH_1110 795
+#define SWITCH_1111 936
+
+
 class Memory 
 {
 public:
@@ -52,7 +72,7 @@ public:
     void setNumber(uint8_t number);
     bool getSendBTNState();
     void setSendBTNState(bool state);
-    uint16_t getSwitchState();
+    uint8_t getSwitchState();
     
 
 private:
