@@ -82,7 +82,7 @@ enum etatModule
 
 // fonction
 bool etatTransitionModule(char rxData);
-bool sendData(int module, int *tabData, int tabSize);
+bool sendData(int module, uint8_t *tabData, int tabSize);
 
 void setup()
 {
@@ -100,13 +100,15 @@ void setup()
   // bombe
   BombeStateFlag = false;
 
+  // LED
+  LEDStateFlag = false;
+
   // memory
   indexData = 0;
   memoryLevel = 0;
   memoryNumber = 10; // 10 = aucun chiffre afficher
   relacheBouton = false;
   memory.MemoryInit();
-  
 
   // loop
   EtatModule = MEMORY;
@@ -139,10 +141,12 @@ void loop()
     {
       relacheBouton = true;
     }
-    else if(!memory.getSendBTNState() && relacheBouton){
+    else if (!memory.getSendBTNState() && relacheBouton)
+    {
       relacheBouton = false;
-      Serial.println(memory.getSwitchState());
-      //sendData(MODULE_MEMORY, memory.getSwitchState(), 1);
+
+      uint8_t memoryValue[1] = {memory.getSwitchState()};
+      sendData(MODULE_MEMORY, memoryValue, 1);
     }
 
     break;
@@ -173,7 +177,6 @@ void loop()
 
     EtatModule = INIT;
   }
-
 }
 
 /**
@@ -189,7 +192,7 @@ void loop()
  * Possibiliter de d'envoie
  *  -<1,cut_wire,> //wire
  *  -<2,padluck_Xvalue,padloc_Yvalue,> //Padlock
- *  -<3,memory_analog_value,> //Memory
+ *  -<3,memory_switch_value,> //Memory
  *  -<4,keypad_digital_value,> //Keypad
  *  -<5,accelerometre_analog_Xvalue,accelerometre_analog_Yvalue,accelerometre_analog_Zvalue,> //accelerometre
  */
@@ -339,6 +342,8 @@ bool etatTransitionModule(char rxData)
         EtatModule = MEMORY;
       else if (idModule == 4)
         EtatModule = KEYPAD;
+      else if (idModule == 4)
+        EtatModule = KEYPAD;
     }
 
     EtatTransition = START_DATA;
@@ -359,7 +364,7 @@ bool etatTransitionModule(char rxData)
  * @return true
  * @return false
  */
-bool sendData(int module, int *tabData, int tabSize)
+bool sendData(int module, uint8_t *tabData, int tabSize)
 {
 
   char txData[30];
@@ -371,7 +376,8 @@ bool sendData(int module, int *tabData, int tabSize)
   for (int i = 0; i < tabSize; i++)
   {
     txData[index++] = ',';
-    char tempTab[10];
+    char tempTab[15];
+
     int sizeTempTab = sprintf(tempTab, "%d", tabData[i]);
 
     for (int j = 0; j < sizeTempTab; j++)
