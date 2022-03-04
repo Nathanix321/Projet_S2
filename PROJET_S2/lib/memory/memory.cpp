@@ -31,7 +31,6 @@ Memory::Memory(ShiftRegister74HC595<2> &_gestionLED, uint8_t analogReadPin, uint
     send_pin = sendReadPin;
     switch_pin = analogReadPin;
     stateSWFlag = false;
-
 }
 
 /**
@@ -44,7 +43,7 @@ Memory::~Memory()
 
 /**
  * @brief affiche les possibilite possible pour le 7 segment et le bargraph
- * 
+ *
  */
 void Memory::MemoryInit()
 {
@@ -184,7 +183,43 @@ void Memory::setSendBTNState(bool state)
  *
  * @return uint16_t
  */
-uint16_t Memory::getSwitchState()
+uint8_t Memory::getSwitchState()
 {
-    return analogRead(switch_pin);
+    uint16_t switchValue = analogRead(switch_pin);
+    uint8_t switchState = 0b0000;
+
+    if (abs(SWITCH_0000 - switchValue) <= 10)
+        switchState = 0b0000;
+    else if (abs(SWITCH_0001 - switchValue) <= 10)
+        switchState = 0b0001;
+    else if (abs(SWITCH_0010 - switchValue) <= 10)
+        switchState = 0b0010;
+    else if (abs(SWITCH_0011 - switchValue) <= 10)
+        switchState = 0b0011;
+    else if (abs(SWITCH_0100 - switchValue) <= 10)
+        switchState = 0b0100;
+    else if (abs(SWITCH_0101 - switchValue) <= 10)
+        switchState = 0b0101;
+    else if (abs(SWITCH_0110 - switchValue) <= 10)
+        switchState = 0b0110;
+    else if (abs(SWITCH_0111 - switchValue) <= 10)
+        switchState = 0b0111;
+    else if (abs(SWITCH_1000 - switchValue) <= 10)
+        switchState = 0b1000;
+    else if (abs(SWITCH_1001 - switchValue) <= 10)
+        switchState = 0b1001;
+    else if (abs(SWITCH_1010 - switchValue) <= 10)
+        switchState = 0b1010;
+    else if (abs(SWITCH_1011 - switchValue) <= 10)
+        switchState = 0b1011;
+    else if (abs(SWITCH_1100 - switchValue) <= 10)
+        switchState = 0b1100;
+    else if (abs(SWITCH_1101 - switchValue) <= 10)
+        switchState = 0b1101;
+    else if (abs(SWITCH_1110 - switchValue) <= 10)
+        switchState = 0b1110;
+    else if (abs(SWITCH_1111 - switchValue) <= 10)
+        switchState = 0b1111;
+
+    return switchState;
 }
