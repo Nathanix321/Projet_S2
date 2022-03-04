@@ -82,7 +82,7 @@ enum etatModule
 
 // fonction
 bool etatTransitionModule(char rxData);
-bool sendData(int module, uint8_t *tabData, int tabSize);
+bool sendData(int module, uint8_t *tabData, uint8_t tabSize);
 
 void setup()
 {
@@ -111,7 +111,7 @@ void setup()
   memory.MemoryInit();
 
   // loop
-  EtatModule = MEMORY;
+  EtatModule = INIT;
 }
 
 void loop()
@@ -121,17 +121,15 @@ void loop()
   switch (EtatModule)
   {
   case INIT:
+    memory.setNumber(10);
+    memory.setLevel(1);
 
     break;
   case WIRE:
-    if (commandeValid)
-    {
-    }
+
     break;
   case PADLOCK:
-    if (commandeValid)
-    {
-    }
+
     break;
   case MEMORY:
     memory.setNumber(memoryNumber);
@@ -151,9 +149,7 @@ void loop()
 
     break;
   case KEYPAD:
-    if (commandeValid)
-    {
-    }
+
     break;
   }
 
@@ -161,17 +157,19 @@ void loop()
   {
     accelerometre.setStateFlag(false);
 
-    int tabValue[3]; // valeur pouvant aller de 0 a 1023
+    uint8_t tabValue[3]; // valeur pouvant aller de 0 a 1023
     tabValue[0] = accelerometre.getX_value();
     tabValue[1] = accelerometre.getY_value();
     tabValue[2] = accelerometre.getZ_value();
 
-    // sendData(MODULE_ACCELEROMETRE, tabValue, 3);
+    sendData(MODULE_ACCELEROMETRE, tabValue, 3);
   }
 
   if (BombeStateFlag)
   {
     BombeStateFlag = false;
+
+    //voir avec team ce qui ce passe
 
     delay(2000);
 
@@ -364,7 +362,7 @@ bool etatTransitionModule(char rxData)
  * @return true
  * @return false
  */
-bool sendData(int module, uint8_t *tabData, int tabSize)
+bool sendData(int module, uint8_t *tabData, uint8_t tabSize)
 {
 
   char txData[30];
