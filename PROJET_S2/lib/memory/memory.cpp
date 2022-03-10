@@ -28,6 +28,7 @@ Memory::Memory(ShiftRegister74HC595<2> &_gestionLED, uint8_t analogReadPin, uint
     pinMode(analogReadPin, INPUT);
 
     pinMode(sendReadPin, INPUT);
+    
     send_pin = sendReadPin;
     switch_pin = analogReadPin;
     stateSWFlag = false;
