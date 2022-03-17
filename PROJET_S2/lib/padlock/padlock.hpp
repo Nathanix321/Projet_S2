@@ -26,7 +26,7 @@ Padlock(uint8_t inputX, uint8_t intputY);
 ~Padlock();
 //int getPinX();
 //int getPinY();
-int getPosition();
+uint8_t getPosition();
 private:
 uint8_t analogPinX;
 uint8_t analogPinY;
