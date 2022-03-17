@@ -18,18 +18,50 @@
  */
 
 #include <Arduino.h>
-#include <accelerometre.hpp>
 #include <ShiftRegister74HC595.h>
+#include <accelerometre.hpp>
 #include <memory.hpp>
+#include <wire.hpp>
+#include <keypad.hpp>
+#include <padlock.hpp>
+#include <accelerometre.hpp>
 
+
+/**  module ID   **/
 #define MODULE_WIRES 1
 #define MODULE_PADLOCK 2
 #define MODULE_MEMORY 3
 #define MODULE_KEYPAD 4
 #define MODULE_ACCELEROMETRE 5
 
-/**     Etat Transition          **/
-// variable
+/**     memory         **/
+#define MEMORY_SRCLK_PIN 23 // clock
+#define MEMORY_SER_PIN 25   // latch
+#define MEMORY_RCLK_PIN 24  // data
+#define MEMORY_ANALOG_PIN A3
+#define MEMORY_DIGITAL_PIN 22
+
+/**     accelerometre         **/
+#define ACCELEROMETRE_X_PIN A5
+#define ACCELEROMETRE_Y_PIN A6
+#define ACCELEROMETRE_Z_PIN A7
+
+/**     keypad         **/
+#define KEYPAD_DIGITAL_SW1 50
+#define KEYPAD_DIGITAL_SW2 51
+#define KEYPAD_DIGITAL_SW3 52
+#define KEYPAD_DIGITAL_SW4 53
+
+/**     padlock         **/
+#define PADLOCK_ANALOG_X_PIN A1
+#define PADLOCK_ANALOG_Y_PIN A2
+
+/**     wire         **/
+#define WIRE_ANALOG_PIN A0
+
+
+/**     Communication          **/
+int indexData;
 bool commandeValid;
 int idModule;
 bool BombeStateFlag;
@@ -37,7 +69,6 @@ bool BombeState;
 bool LEDStateFlag;
 uint8_t LEDState;
 
-// constante
 enum etatTransition
 {
   START_DATA,
@@ -48,26 +79,40 @@ enum etatTransition
   END_DATA
 } EtatTransition;
 
-/**     memory         **/
-#define MEMORY_SRCLK_PIN 23 // clock
-#define MEMORY_SER_PIN 25   // latch
-#define MEMORY_RCLK_PIN 24  // data
-#define MEMORY_ANALOG_PIN A4
-#define MEMORY_DIGITAL_PIN 22
+bool etatTransitionModule(char rxData);
+bool sendData(int module, uint8_t *tabData, uint8_t tabSize);
 
-int indexData;
+
+/**     memory         **/
 uint8_t memoryLevel;
 uint8_t memoryNumber;
-bool relacheBouton;
+bool memory_relacheBouton;
+
+/**     accelerometre         **/
+uint8_t accelerometre_tabValue[3]; // valeur pouvant aller de 0 a 1023
+
+/**     keypad         **/
+uint8_t keypad_touchePrecedente;
+uint8_t keypad_touche;
+
+/**     padlock         **/
+uint8_t padlock_positionPrecedente;
+uint8_t padlock_position;
+uint8_t padlock_lastState;
+
+/**     wire         **/
+uint8_t wire_valeurPrecedente;
+uint8_t wire_valeur;
+
+
 
 ShiftRegister74HC595<2> gestionLED(MEMORY_RCLK_PIN, MEMORY_SRCLK_PIN, MEMORY_SER_PIN);
 Memory memory(gestionLED, MEMORY_ANALOG_PIN, MEMORY_DIGITAL_PIN);
-
-/**     accelerometre         **/
-#define ACCELEROMETRE_X_PIN A5
-#define ACCELEROMETRE_Y_PIN A6
-#define ACCELEROMETRE_Z_PIN A7
 Accelerometre accelerometre(ACCELEROMETRE_X_PIN, ACCELEROMETRE_Y_PIN, ACCELEROMETRE_Z_PIN);
+//KeyPad keypad();
+Padlock padlock(PADLOCK_ANALOG_X_PIN, PADLOCK_ANALOG_Y_PIN);
+//Wire wire();
+
 
 /**     loop         **/
 enum etatModule
@@ -80,9 +125,7 @@ enum etatModule
 
 } EtatModule;
 
-// fonction
-bool etatTransitionModule(char rxData);
-bool sendData(int module, uint8_t *tabData, uint8_t tabSize);
+
 
 void setup()
 {
@@ -107,8 +150,11 @@ void setup()
   indexData = 0;
   memoryLevel = 0;
   memoryNumber = 10; // 10 = aucun chiffre afficher
-  relacheBouton = false;
+  memory_relacheBouton = false;
   memory.MemoryInit();
+
+  // padlock
+  padlock_lastState = 0;
 
   // loop
   EtatModule = INIT;
@@ -130,18 +176,26 @@ void loop()
     break;
   case PADLOCK:
 
+    uint8_t valuePadlock = padlock.getPosition();
+
+    if(valuePadlock && (padlock_lastState != valuePadlock)){
+      padlock_lastState = valuePadlock;
+      uint8_t padlockValue[1] = {valuePadlock};
+      sendData(MODULE_PADLOCK, padlockValue, 1);
+    }
+
     break;
   case MEMORY:
     memory.setNumber(memoryNumber);
     memory.setLevel(memoryLevel);
 
-    if (memory.getSendBTNState() && !relacheBouton)
+    if (memory.getSendBTNState() && !memory_relacheBouton)
     {
-      relacheBouton = true;
+      memory_relacheBouton = true;
     }
-    else if (!memory.getSendBTNState() && relacheBouton)
+    else if (!memory.getSendBTNState() && memory_relacheBouton)
     {
-      relacheBouton = false;
+      memory_relacheBouton = false;
 
       uint8_t memoryValue[1] = {memory.getSwitchState()};
       sendData(MODULE_MEMORY, memoryValue, 1);
@@ -157,12 +211,11 @@ void loop()
   {
     accelerometre.setStateFlag(false);
 
-    uint8_t tabValue[3]; // valeur pouvant aller de 0 a 1023
-    tabValue[0] = accelerometre.getX_value();
-    tabValue[1] = accelerometre.getY_value();
-    tabValue[2] = accelerometre.getZ_value();
+    accelerometre_tabValue[0] = accelerometre.getX_value();
+    accelerometre_tabValue[1] = accelerometre.getY_value();
+    accelerometre_tabValue[2] = accelerometre.getZ_value();
 
-    sendData(MODULE_ACCELEROMETRE, tabValue, 3);
+    sendData(MODULE_ACCELEROMETRE, accelerometre_tabValue, 3);
   }
 
   if (BombeStateFlag)
@@ -388,7 +441,8 @@ bool sendData(int module, uint8_t *tabData, uint8_t tabSize)
   txData[index++] = '>';
   txData[index] = '\0';
 
-  Serial.println(txData);
+  Serial.print(txData);
+  Serial.println();
 
   return 0;
 }
