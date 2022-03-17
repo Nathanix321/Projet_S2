@@ -19,7 +19,6 @@
 // constructeur set les pin du joystick
 Padlock::Padlock(uint8_t inputX, uint8_t inputY)
 {
-
     pinMode(inputX, INPUT);
     pinMode(inputY, INPUT);
     analogPinX = inputX;
@@ -27,7 +26,7 @@ Padlock::Padlock(uint8_t inputX, uint8_t inputY)
 }
 
 // Retourne la valeur associée à la position du joystick
-int Padlock::getPosition()
+uint8_t Padlock::getPosition()
 {
     if (analogRead(analogPinY) > VAL_POT_HAUT)
     {
