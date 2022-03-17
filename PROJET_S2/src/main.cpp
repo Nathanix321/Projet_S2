@@ -98,6 +98,7 @@ uint8_t keypad_touche;
 /**     padlock         **/
 uint8_t padlock_positionPrecedente;
 uint8_t padlock_position;
+uint8_t padlock_lastState;
 
 /**     wire         **/
 uint8_t wire_valeurPrecedente;
@@ -152,6 +153,9 @@ void setup()
   memory_relacheBouton = false;
   memory.MemoryInit();
 
+  // padlock
+  padlock_lastState = 0;
+
   // loop
   EtatModule = INIT;
 }
@@ -171,6 +175,14 @@ void loop()
 
     break;
   case PADLOCK:
+
+    uint8_t valuePadlock = padlock.getPosition();
+
+    if(valuePadlock && (padlock_lastState != valuePadlock)){
+      padlock_lastState = valuePadlock;
+      uint8_t padlockValue[1] = {valuePadlock};
+      sendData(MODULE_PADLOCK, padlockValue, 1);
+    }
 
     break;
   case MEMORY:
