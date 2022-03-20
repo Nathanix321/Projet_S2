@@ -98,7 +98,6 @@ uint8_t keypad_touche;
 /**     padlock         **/
 uint8_t padlock_positionPrecedente;
 uint8_t padlock_position;
-uint8_t padlock_lastState;
 
 /**     wire         **/
 uint8_t wire_valeurPrecedente;
@@ -109,7 +108,7 @@ uint8_t wire_valeur;
 ShiftRegister74HC595<2> gestionLED(MEMORY_RCLK_PIN, MEMORY_SRCLK_PIN, MEMORY_SER_PIN);
 Memory memory(gestionLED, MEMORY_ANALOG_PIN, MEMORY_DIGITAL_PIN);
 Accelerometre accelerometre(ACCELEROMETRE_X_PIN, ACCELEROMETRE_Y_PIN, ACCELEROMETRE_Z_PIN);
-//KeyPad keypad();
+Keypad keypad(KEYPAD_DIGITAL_SW1, KEYPAD_DIGITAL_SW2, KEYPAD_DIGITAL_SW3, KEYPAD_DIGITAL_SW4);
 Padlock padlock(PADLOCK_ANALOG_X_PIN, PADLOCK_ANALOG_Y_PIN);
 //Wire wire();
 
@@ -154,7 +153,10 @@ void setup()
   memory.MemoryInit();
 
   // padlock
-  padlock_lastState = 0;
+  padlock_positionPrecedente = 0;
+
+  //keypad
+  keypad_touchePrecedente = 0;
 
   // loop
   EtatModule = INIT;
@@ -178,14 +180,16 @@ void loop()
 
     uint8_t valuePadlock = padlock.getPosition();
 
-    if(valuePadlock && (padlock_lastState != valuePadlock)){
-      padlock_lastState = valuePadlock;
+    if(valuePadlock && (padlock_positionPrecedente != valuePadlock)){
+      padlock_positionPrecedente = valuePadlock;
+
       uint8_t padlockValue[1] = {valuePadlock};
       sendData(MODULE_PADLOCK, padlockValue, 1);
     }
 
     break;
   case MEMORY:
+  
     memory.setNumber(memoryNumber);
     memory.setLevel(memoryLevel);
 
@@ -203,6 +207,15 @@ void loop()
 
     break;
   case KEYPAD:
+
+    uint8_t valueKeypad = keypad.detecterTouche();
+
+    if(valueKeypad && (keypad_touchePrecedente != valueKeypad)){
+      keypad_touchePrecedente = valueKeypad;
+
+      uint8_t keypadValue[1] = {valueKeypad};
+      sendData(MODULE_PADLOCK, keypadValue, 1);
+    }
 
     break;
   }
