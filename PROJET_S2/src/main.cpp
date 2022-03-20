@@ -181,15 +181,15 @@ void loop()
     uint8_t valuePadlock = padlock.getPosition();
 
     if(valuePadlock && (padlock_positionPrecedente != valuePadlock)){
-      padlock_positionPrecedente = valuePadlock;
-
       uint8_t padlockValue[1] = {valuePadlock};
       sendData(MODULE_PADLOCK, padlockValue, 1);
     }
 
+    padlock_positionPrecedente = valuePadlock;
+
     break;
   case MEMORY:
-  
+
     memory.setNumber(memoryNumber);
     memory.setLevel(memoryLevel);
 
@@ -211,11 +211,10 @@ void loop()
     uint8_t valueKeypad = keypad.detecterTouche();
 
     if(valueKeypad && (keypad_touchePrecedente != valueKeypad)){
-      keypad_touchePrecedente = valueKeypad;
-
       uint8_t keypadValue[1] = {valueKeypad};
       sendData(MODULE_PADLOCK, keypadValue, 1);
     }
+    keypad_touchePrecedente = valueKeypad;
 
     break;
   }
