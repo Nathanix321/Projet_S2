@@ -12,7 +12,24 @@
 
 
 
+
+
+/**
+ * 
+ *  Revoir class, l'arduino doit seulement detecter un changement d'état et l'envoyer au PC, donc les méthodes ne corespond pas a ce qui est demandé 
+ * 
+ **/
+
+
+
+
+
+
 #include "KeyPad.hpp"
+
+
+// Pourquoi tu les declares dans le .cpp et le .hpp?????? 
+
 uint8_t switchPin1;
 uint8_t switchPin2;
 uint8_t switchPin3;
@@ -23,19 +40,29 @@ uint8_t switchPin4;
 
 Keypad :: Keypad(uint8_t switchPin1, uint8_t switchPin2, uint8_t switchPin3, uint8_t switchPin4)
 {
-  int arr[BOUTMAX][STATES];
+  int arr[BOUTMAX][STATES]; // le tableau es local au constructeur, donc ne peux pas etre utiliser
   keypadInit(arr);
   genmodule(0, 4, BOUTMAX, arr);
-  switchPin1 = this->switchPin1;
+  /*switchPin1 = this->switchPin1; v   c'est l'inverse, le this affect la variable privé de la class et non la variable en parametre
   switchPin2 = this->switchPin2;
   switchPin3 = this->switchPin3;
-  switchPin4 = this->switchPin4;
+  switchPin4 = this->switchPin4;*/
+  this->switchPin1 = switchPin1;
+  this->switchPin2 = switchPin2;
+  this->switchPin3 = switchPin3;
+  this->switchPin4 = switchPin4;
 }
 
 Keypad::~Keypad()
 {
 }
 
+
+/**
+*
+* A quoi sert cette méthode la ???? l'arduino ne genere pas de module
+*
+ **/
 void Keypad :: genmodule(const int nMin, const int nMax, const int  nToGenerate, int arr[BOUTMAX][STATES])
 {
   int ran_num = 0;
@@ -50,6 +77,12 @@ void Keypad :: genmodule(const int nMin, const int nMax, const int  nToGenerate,
   }
 }
 
+
+/**
+*
+* A quoi sert cette méthode la ???? 
+*
+ **/
 void Keypad :: keypadInit(int arr[BOUTMAX][STATES])
 {
 	for (int i=0; i<BOUTMAX;i++)
@@ -72,6 +105,11 @@ int Keypad :: Reussi(int arr[BOUTMAX][STATES])
 	return total;
 }
 
+/**
+*
+* A quoi sert cette méthode la ???? l'arduino ne genere pas de module
+*
+ **/
 void Keypad :: detecterTouche(int arr[BOUTMAX][STATES])
 {
     if (digitalRead(switchPin1) == HIGH)
