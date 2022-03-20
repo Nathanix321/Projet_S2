@@ -25,6 +25,14 @@ Padlock::Padlock(uint8_t inputX, uint8_t inputY)
     analogPinY = inputY;
 }
 
+/**
+ * @brief Destroy the Padlock object
+ * 
+ */
+Padlock::~Padlock(){
+
+}
+
 // Retourne la valeur associée à la position du joystick
 uint8_t Padlock::getPosition()
 {
