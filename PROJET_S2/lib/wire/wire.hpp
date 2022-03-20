@@ -17,7 +17,7 @@ class Wire
 {
 public:
     Wire();
-    Wire();
+
     ~Wire();
 
 ;
