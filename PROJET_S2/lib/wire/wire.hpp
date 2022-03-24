@@ -12,19 +12,22 @@
 #define WIRE_H_
  
 #include <Arduino.h>
+
+#define INCREMENTVOLTAGE 65.9835
  
 class Wire 
 {
 public:
-    Wire();
+    Wire(uint8_t analogPin1);
  
     ~Wire();
  
     int getCutWires();
-    
+    int formatvoltage(float voltage);
  
 private:
- 
+    int format;
+    uint8_t analogPin1;
 };
 
 #endif /* WIRE_H_ */

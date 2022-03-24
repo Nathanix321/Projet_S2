@@ -110,7 +110,7 @@ Memory memory(gestionLED, MEMORY_ANALOG_PIN, MEMORY_DIGITAL_PIN);
 Accelerometre accelerometre(ACCELEROMETRE_X_PIN, ACCELEROMETRE_Y_PIN, ACCELEROMETRE_Z_PIN);
 Keypad keypad(KEYPAD_DIGITAL_SW1, KEYPAD_DIGITAL_SW2, KEYPAD_DIGITAL_SW3, KEYPAD_DIGITAL_SW4);
 Padlock padlock(PADLOCK_ANALOG_X_PIN, PADLOCK_ANALOG_Y_PIN);
-//Wire wire();
+Wire wire(WIRE_ANALOG_PIN);
 
 
 /**     loop         **/
@@ -158,6 +158,9 @@ void setup()
   //keypad
   keypad_touchePrecedente = 0;
 
+  //wire
+  wire_valeurPrecedente = 0;
+
   // loop
   EtatModule = INIT;
 }
@@ -174,6 +177,15 @@ void loop()
 
     break;
   case WIRE:
+    wire_valeur = wire.getCutWires();
+    Serial.println(wire_valeur);
+
+    if(wire_valeur && (wire_valeurPrecedente != wire_valeur)){
+      int wireValue[1] = {wire_valeur};
+      Serial.println(wire_valeur);
+      sendData(MODULE_WIRES, wireValue, 1);
+    }
+    wire_valeurPrecedente = wire_valeur;
 
     break;
   case PADLOCK:
@@ -212,7 +224,7 @@ void loop()
 
     if(valueKeypad && (keypad_touchePrecedente != valueKeypad)){
       int keypadValue[1] = {valueKeypad};
-      sendData(MODULE_PADLOCK, keypadValue, 1);
+      sendData(MODULE_KEYPAD, keypadValue, 1);
     }
     keypad_touchePrecedente = valueKeypad;
 
