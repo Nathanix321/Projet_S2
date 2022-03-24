@@ -25,7 +25,7 @@
 #include <keypad.hpp>
 #include <padlock.hpp>
 #include <accelerometre.hpp>
-
+#include <stdio.h>
 
 /**  module ID   **/
 #define MODULE_WIRES 1
@@ -80,7 +80,7 @@ enum etatTransition
 } EtatTransition;
 
 bool etatTransitionModule(char rxData);
-bool sendData(int module, uint8_t *tabData, uint8_t tabSize);
+bool sendData(int module, int *tabData, uint8_t tabSize);
 
 
 /**     memory         **/
@@ -89,7 +89,7 @@ uint8_t memoryNumber;
 bool memory_relacheBouton;
 
 /**     accelerometre         **/
-uint8_t accelerometre_tabValue[3]; // valeur pouvant aller de 0 a 1023
+int accelerometre_tabValue[3]; // valeur pouvant aller de 0 a 1023
 
 /**     keypad         **/
 uint8_t keypad_touchePrecedente;
@@ -181,7 +181,7 @@ void loop()
     uint8_t valuePadlock = padlock.getPosition();
 
     if(valuePadlock && (padlock_positionPrecedente != valuePadlock)){
-      uint8_t padlockValue[1] = {valuePadlock};
+      int padlockValue[1] = {valuePadlock};
       sendData(MODULE_PADLOCK, padlockValue, 1);
     }
 
@@ -201,7 +201,7 @@ void loop()
     {
       memory_relacheBouton = false;
 
-      uint8_t memoryValue[1] = {memory.getSwitchState()};
+      int memoryValue[1] = {memory.getSwitchState()};
       sendData(MODULE_MEMORY, memoryValue, 1);
     }
 
@@ -211,7 +211,7 @@ void loop()
     uint8_t valueKeypad = keypad.detecterTouche();
 
     if(valueKeypad && (keypad_touchePrecedente != valueKeypad)){
-      uint8_t keypadValue[1] = {valueKeypad};
+      int keypadValue[1] = {valueKeypad};
       sendData(MODULE_PADLOCK, keypadValue, 1);
     }
     keypad_touchePrecedente = valueKeypad;
@@ -427,7 +427,7 @@ bool etatTransitionModule(char rxData)
  * @return true
  * @return false
  */
-bool sendData(int module, uint8_t *tabData, uint8_t tabSize)
+bool sendData(int module, int *tabData, uint8_t tabSize)
 {
 
   char txData[30];
