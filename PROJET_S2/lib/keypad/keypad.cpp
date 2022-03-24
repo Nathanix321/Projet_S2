@@ -46,7 +46,7 @@ Keypad::~Keypad()
  * 
  * @return uint8_t 
  */
-uint8_t Keypad::detecterTouche()
+int Keypad::detecterTouche()
 {
         bool value_switchPin1 = digitalRead(switchPin1);
         bool value_switchPin2 = digitalRead(switchPin2);
