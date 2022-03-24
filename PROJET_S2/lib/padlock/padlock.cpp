@@ -11,8 +11,8 @@
 #include "padlock.hpp"
 
 // positions possibles du jostick et leur valeur associée
-#define RIGHT 1
-#define LEFT 2
+#define RIGHT 2
+#define LEFT 1
 #define UP 3
 #define DOWN 4
 

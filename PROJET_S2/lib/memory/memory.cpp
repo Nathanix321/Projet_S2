@@ -186,40 +186,41 @@ void Memory::setSendBTNState(bool state)
  */
 int Memory::getSwitchState()
 {
-    uint16_t switchValue = analogRead(switch_pin);
+    int switchValue = analogRead(switch_pin);
+    //Serial.println(switchValue);
     uint8_t switchState = 0b0000;
 
-    if (abs(SWITCH_0000 - switchValue) <= 10)
+    if (abs(SWITCH_0000 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b0000;
-    else if (abs(SWITCH_0001 - switchValue) <= 10)
+    else if (abs(SWITCH_0001 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b0001;
-    else if (abs(SWITCH_0010 - switchValue) <= 10)
+    else if (abs(SWITCH_0010 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b0010;
-    else if (abs(SWITCH_0011 - switchValue) <= 10)
+    else if (abs(SWITCH_0011 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b0011;
-    else if (abs(SWITCH_0100 - switchValue) <= 10)
+    else if (abs(SWITCH_0100 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b0100;
-    else if (abs(SWITCH_0101 - switchValue) <= 10)
+    else if (abs(SWITCH_0101 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b0101;
-    else if (abs(SWITCH_0110 - switchValue) <= 10)
+    else if (abs(SWITCH_0110 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b0110;
-    else if (abs(SWITCH_0111 - switchValue) <= 10)
+    else if (abs(SWITCH_0111 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b0111;
-    else if (abs(SWITCH_1000 - switchValue) <= 10)
+    else if (abs(SWITCH_1000 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b1000;
-    else if (abs(SWITCH_1001 - switchValue) <= 10)
+    else if (abs(SWITCH_1001 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b1001;
-    else if (abs(SWITCH_1010 - switchValue) <= 10)
+    else if (abs(SWITCH_1010 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b1010;
-    else if (abs(SWITCH_1011 - switchValue) <= 10)
+    else if (abs(SWITCH_1011 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b1011;
-    else if (abs(SWITCH_1100 - switchValue) <= 10)
+    else if (abs(SWITCH_1100 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b1100;
-    else if (abs(SWITCH_1101 - switchValue) <= 10)
+    else if (abs(SWITCH_1101 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b1101;
-    else if (abs(SWITCH_1110 - switchValue) <= 10)
+    else if (abs(SWITCH_1110 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b1110;
-    else if (abs(SWITCH_1111 - switchValue) <= 10)
+    else if (abs(SWITCH_1111 - switchValue) <= SWITCH_SENSIBILITY)
         switchState = 0b1111;
 
     return switchState;

@@ -42,22 +42,23 @@
 
 
 //Valeur ADC de sortie du sommateur
-#define SWITCH_0000 0
+#define SWITCH_0000 3
 #define SWITCH_0001 56
 #define SWITCH_0010 109
 #define SWITCH_0011 151
-#define SWITCH_0100 191
-#define SWITCH_0101 229
-#define SWITCH_0110 271
-#define SWITCH_0111 311
-#define SWITCH_1000 354
-#define SWITCH_1001 400
-#define SWITCH_1010 458
-#define SWITCH_1011 518
-#define SWITCH_1100 590
-#define SWITCH_1101 676
-#define SWITCH_1110 795
-#define SWITCH_1111 936
+#define SWITCH_0100 190
+#define SWITCH_0101 227
+#define SWITCH_0110 269
+#define SWITCH_0111 307
+#define SWITCH_1000 349
+#define SWITCH_1001 395
+#define SWITCH_1010 451
+#define SWITCH_1011 511
+#define SWITCH_1100 581
+#define SWITCH_1101 666
+#define SWITCH_1110 783
+#define SWITCH_1111 934
+#define SWITCH_SENSIBILITY 20
 
 
 class Memory 
