@@ -10,28 +10,21 @@
  */
 #ifndef WIRE_H_
 #define WIRE_H_
-
+ 
 #include <Arduino.h>
-
+ 
 class Wire 
 {
 public:
     Wire();
-
+ 
     ~Wire();
-
-;
+ 
+    int getCutWires();
     
-
+ 
 private:
-
-
+ 
 };
-
-
-
-
-
-
 
 #endif /* WIRE_H_ */
