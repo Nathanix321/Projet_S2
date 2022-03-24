@@ -26,13 +26,13 @@ public:
     Keypad();
     ~Keypad();
 
-    uint8_t detecterTouche();
+    int detecterTouche();
 
 private:
-    uint8_t switchPin1;
-    uint8_t switchPin2;
-    uint8_t switchPin3;
-    uint8_t switchPin4;
+    int switchPin1;
+    int switchPin2;
+    int switchPin3;
+    int switchPin4;
 
     bool value_switchPin1;
     bool value_switchPin2;

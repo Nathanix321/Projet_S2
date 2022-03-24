@@ -184,7 +184,7 @@ void Memory::setSendBTNState(bool state)
  *
  * @return uint16_t
  */
-uint8_t Memory::getSwitchState()
+int Memory::getSwitchState()
 {
     uint16_t switchValue = analogRead(switch_pin);
     uint8_t switchState = 0b0000;

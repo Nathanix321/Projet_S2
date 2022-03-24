@@ -92,16 +92,16 @@ bool memory_relacheBouton;
 int accelerometre_tabValue[3]; // valeur pouvant aller de 0 a 1023
 
 /**     keypad         **/
-uint8_t keypad_touchePrecedente;
-uint8_t keypad_touche;
-
+int keypad_touchePrecedente;
+int keypad_touche;
+int valueKeypad;
 /**     padlock         **/
-uint8_t padlock_positionPrecedente;
-uint8_t padlock_position;
-
+int padlock_positionPrecedente;
+int padlock_position;
+int valuePadlock;
 /**     wire         **/
-uint8_t wire_valeurPrecedente;
-uint8_t wire_valeur;
+int wire_valeurPrecedente;
+int wire_valeur;
 
 
 
@@ -178,7 +178,7 @@ void loop()
     break;
   case PADLOCK:
 
-    uint8_t valuePadlock = padlock.getPosition();
+    valuePadlock = padlock.getPosition();
 
     if(valuePadlock && (padlock_positionPrecedente != valuePadlock)){
       int padlockValue[1] = {valuePadlock};
@@ -188,6 +188,7 @@ void loop()
     padlock_positionPrecedente = valuePadlock;
 
     break;
+
   case MEMORY:
 
     memory.setNumber(memoryNumber);
@@ -200,7 +201,6 @@ void loop()
     else if (!memory.getSendBTNState() && memory_relacheBouton)
     {
       memory_relacheBouton = false;
-
       int memoryValue[1] = {memory.getSwitchState()};
       sendData(MODULE_MEMORY, memoryValue, 1);
     }
@@ -208,7 +208,7 @@ void loop()
     break;
   case KEYPAD:
 
-    uint8_t valueKeypad = keypad.detecterTouche();
+    valueKeypad = keypad.detecterTouche();
 
     if(valueKeypad && (keypad_touchePrecedente != valueKeypad)){
       int keypadValue[1] = {valueKeypad};
@@ -227,7 +227,7 @@ void loop()
     accelerometre_tabValue[1] = accelerometre.getY_value();
     accelerometre_tabValue[2] = accelerometre.getZ_value();
 
-    sendData(MODULE_ACCELEROMETRE, accelerometre_tabValue, 3);
+    //sendData(MODULE_ACCELEROMETRE, accelerometre_tabValue, 3);
   }
 
   if (BombeStateFlag)

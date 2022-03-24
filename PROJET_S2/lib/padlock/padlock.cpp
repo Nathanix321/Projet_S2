@@ -34,7 +34,7 @@ Padlock::~Padlock(){
 }
 
 // Retourne la valeur associée à la position du joystick
-uint8_t Padlock::getPosition()
+int Padlock::getPosition()
 {
     if (analogRead(analogPinY) > VAL_POT_HAUT)
     {

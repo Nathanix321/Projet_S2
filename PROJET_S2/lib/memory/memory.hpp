@@ -72,7 +72,7 @@ public:
     void setNumber(uint8_t number);
     bool getSendBTNState();
     void setSendBTNState(bool state);
-    uint8_t getSwitchState();
+    int getSwitchState();
     
 
 private:
