@@ -12,31 +12,7 @@ Wire::~Wire()
  
 int Wire::getCutWires()
 {
-    format = formatvoltage(analogRead(analogPin1));
-    //Serial.println(format);
-    int wires = 0;
- 
-    if(format%2!=0)
-    {
-      wires |= 1;
-    }
-    format/=2;
-    if(format%2!=0)
-    {
-       wires |= 2;
-    }
-    format/=2;
-    if(format%2!=0)
-    {
-      wires |= 4;
-    }
-    format/=2;
-    if(format%2!=0)
-    {
-      wires |= 8;
-    }
-
-    return wires;
+    return formatvoltage(analogRead(analogPin1));
 }
 
 
